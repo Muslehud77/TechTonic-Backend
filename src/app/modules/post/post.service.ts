@@ -1,10 +1,12 @@
-import { ObjectId } from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { QueryBuilder } from '../../builder/QueryBuilder';
 import AppError from '../../errors/AppError';
 import { TImageFiles } from '../../interfaces/image.interface';
 
 import IPost from './post.interface';
 import { Post } from './post.model';
+import { Comment } from '../Comment/comment.model';
+import httpStatus from 'http-status';
 
 const createPostIntoDB = async (
   payload: IPost & { captions: string[] },
@@ -49,9 +51,32 @@ const updatePostInDB = async (postId: string, payload: Partial<IPost>) => {
 };
 
 const deletePostFromDB = async (postId: string) => {
-  const result = await Post.findByIdAndDelete(postId);
+  // Start a session
+  const session = await mongoose.startSession();
 
-  return result;
+  try {
+    // Start a transaction
+    session.startTransaction();
+
+    // Delete all comments for the post within the same transaction
+    await Comment.deleteMany({ post: postId }).session(session);
+
+    // Delete the post
+    const result = await Post.findByIdAndDelete(postId).session(session);
+
+    // Commit the transaction
+    await session.commitTransaction();
+
+    // Return the result of the post deletion
+    return result;
+  } catch (error:any) {
+    // If an error occurs, abort the transaction
+    await session.abortTransaction();
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, error.message || "something went wrong while deleting the post"); // Rethrow the error to be handled by the calling code
+  } finally {
+    // End the session
+    session.endSession();
+  }
 };
 
 const upvoteAndDownvotePostInDB = async (

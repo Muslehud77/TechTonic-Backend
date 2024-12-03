@@ -1,6 +1,6 @@
-import { ClaimRequestValidation } from './claimRequest.validation';
+import { ClaimRequestValidation } from './comment.validation';
 import express from 'express';
-import { ClaimRequestControllers } from './claimRequest.controller';
+import { ClaimRequestControllers } from './comment.controller';
 import auth from '../../middlewares/auth';
 import { USER_ROLE } from '../User/user.constant';
 import validateRequest from '../../middlewares/validateRequest';

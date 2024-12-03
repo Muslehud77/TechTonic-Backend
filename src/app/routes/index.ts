@@ -4,7 +4,7 @@ import { UserRoutes } from '../modules/User/user.route';
 import { PostRoutes } from '../modules/post/post.route';
 import { ItemCategoryRoutes } from '../modules/ItemCategory/itemCategory.route';
 import { ProfileRoutes } from '../modules/Profile/profile.route';
-import { ClaimRequestRoutes } from '../modules/ClaimRequest/claimRequest.route';
+import { ClaimRequestRoutes } from '../modules/Comment/comment.route';
 
 const router = express.Router();
 
