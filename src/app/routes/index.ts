@@ -2,9 +2,8 @@ import express from 'express';
 import { AuthRoutes } from '../modules/Auth/auth.route';
 import { UserRoutes } from '../modules/User/user.route';
 import { PostRoutes } from '../modules/post/post.route';
-import { ItemCategoryRoutes } from '../modules/ItemCategory/itemCategory.route';
 import { ProfileRoutes } from '../modules/Profile/profile.route';
-import { ClaimRequestRoutes } from '../modules/Comment/comment.route';
+import { CommentRouters } from '../modules/Comment/comment.route';
 
 const router = express.Router();
 
@@ -13,18 +12,14 @@ const moduleRoutes = [
     path: '/auth',
     route: AuthRoutes,
   },
-  // {
-  //   path: '/item-categories',
-  //   route: ItemCategoryRoutes,
-  // },
   {
     path: '/post',
     route: PostRoutes,
   },
-  // {
-  //   path: '/claim-request',
-  //   route: ClaimRequestRoutes,
-  // },
+  {
+    path: '/comment',
+    route: CommentRouters,
+  },
 
   {
     path: '/users',

@@ -7,7 +7,6 @@ import { UserValidation } from './user.validation';
 
 const router = express.Router();
 
-export const UserRoutes = router;
 
 router.post(
   '/create-user',
@@ -17,3 +16,5 @@ router.post(
 );
 router.get('/', UserControllers.getAllUsers);
 router.get('/:id', UserControllers.getSingleUser);
+
+export const UserRoutes = router;

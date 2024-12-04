@@ -11,13 +11,7 @@ const getCommentsByPostId = async (postId: string) => {
   return result;
 };
 
-// Get a single comment by its ID
-const getCommentById = async (commentId: string) => {
-  const result = await Comment.findById(commentId)
-    .populate('user')
-    .populate('replyTo');
-  return result;
-};
+
 
 // Create a new comment
 const createComment = async (comment: TComment,userId: string) => {
@@ -52,26 +46,11 @@ const deleteComment = async (commentId: string, userId: string) => {
   return result;
 };
 
-// Add a reply to a comment
-const addReplyToComment = async (
-  parentCommentId: string,
-  replyComment: TComment,
-  userId :string
-) => {
-  // Set the `replyTo` field to the parent comment's ID
-  const result = await Comment.create({
-    ...replyComment,
-    user  : userId,
-    replyTo: parentCommentId,
-  });
-  return result;
-};
-
 export const CommentServices = {
   getCommentsByPostId,
-  getCommentById,
+ 
   createComment,
   updateComment,
   deleteComment,
-  addReplyToComment,
+  
 };

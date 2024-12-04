@@ -6,7 +6,7 @@ const createCommentValidationSchema = z.object({
   body: z.object({
     post: z.string().nonempty(),
     comment: z.string().nonempty(),
-    replyTo: z.string().nullable(),
+    replyTo: z.string().nullable().optional(),
   }),
 });
 
@@ -15,7 +15,6 @@ const updateCommentValidationSchema = z.object({
     comment: z.string().nonempty(),
   }),
 });
-
 
 
 

@@ -1,42 +1,38 @@
-import { ClaimRequestValidation } from './comment.validation';
+import { CommentValidation } from './comment.validation';
 import express from 'express';
-import { ClaimRequestControllers } from './comment.controller';
+import {
+  ClaimRequestControllers,
+  CommentControllers,
+} from './comment.controller';
 import auth from '../../middlewares/auth';
 import { USER_ROLE } from '../User/user.constant';
 import validateRequest from '../../middlewares/validateRequest';
 
 const router = express.Router();
 
-router.get(
-  '/received-claim-request',
-  auth(USER_ROLE.USER),
-  ClaimRequestControllers.viewReceivedClaimRequests
-);
-
-router.get(
-  '/my-claim-request',
-  auth(USER_ROLE.USER),
-  ClaimRequestControllers.viewMyClaimRequests
-);
-
-router.get(
-  '/:id',
-  auth(USER_ROLE.USER),
-  ClaimRequestControllers.getClaimRequestById
-);
-
 router.post(
   '/',
   auth(USER_ROLE.USER),
-  validateRequest(ClaimRequestValidation.createClaimRequestValidationSchema),
-  ClaimRequestControllers.createClaimRequest
+  validateRequest(CommentValidation.createCommentValidationSchema),
+  CommentControllers.createComment
 );
 
-router.put(
-  '/:id',
+router.delete(
+  '/:commentId',
   auth(USER_ROLE.USER),
-  validateRequest(ClaimRequestValidation.updateClaimRequestStatusWithFeedbackSchema),
-  ClaimRequestControllers.updateStatusWithFeedback
+  CommentControllers.deleteComment
 );
 
-export const ClaimRequestRoutes = router;
+router.patch(
+  '/:commentId',
+  auth(USER_ROLE.USER),
+  validateRequest(CommentValidation.updateCommentValidationSchema),
+  CommentControllers.updateComment
+);
+
+
+
+
+router.get('/:postId', CommentControllers.getCommentsByPost);
+
+export const CommentRouters = router;
