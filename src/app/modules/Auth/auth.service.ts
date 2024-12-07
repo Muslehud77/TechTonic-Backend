@@ -217,9 +217,43 @@ const refreshToken = async (token: string) => {
   };
 };
 
+
+const forgotPassword = async (email: string) => { 
+
+  const user = await User.isUserExistsByEmail(email);
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
+  }
+
+  const jwtPayload = {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    mobileNumber: user.mobileNumber,
+    profilePhoto: user.profilePhoto,
+    role: user.role,
+    status: user.status,
+  };
+
+  const accessToken = createToken(
+    jwtPayload,
+    config.jwt_access_secret as string,
+   "10m"
+  );
+
+
+
+  const resetLink = `${config.client_url}/reset-password?id=${user._id}&token=${accessToken}`;
+
+
+
+}
+
 export const AuthServices = {
   registerUser,
   loginUser,
   changePassword,
   refreshToken,
+  forgotPassword,
 };

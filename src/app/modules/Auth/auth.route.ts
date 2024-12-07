@@ -28,6 +28,13 @@ router.post(
 );
 
 router.post(
+  '/forget-password',
+
+  validateRequest(AuthValidation.forgetPasswordValidationSchema),
+  AuthControllers.forgetPassword
+);
+
+router.post(
   '/refresh-token',
   validateRequestCookies(AuthValidation.refreshTokenValidationSchema),
   AuthControllers.refreshToken
