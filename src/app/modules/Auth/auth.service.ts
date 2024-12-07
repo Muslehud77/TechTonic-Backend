@@ -8,6 +8,7 @@ import { USER_ROLE } from '../User/user.constant';
 import { User } from '../User/user.model';
 import { TLoginUser, TRegisterUser } from './auth.interface';
 import { TUser } from '../User/user.interface';
+import { EmailHelper } from '../../utils/emailSender';
 
 const registerUser = async (payload: TRegisterUser) => {
   // checking if the user is exist
@@ -115,7 +116,12 @@ const loginUser = async (payload: TLoginUser) => {
   }
 
   if (user && payload?.password) {
-    if (!(await User.isPasswordMatched(payload?.password, (user?.password as string))))
+    if (
+      !(await User.isPasswordMatched(
+        payload?.password,
+        user?.password as string
+      ))
+    )
       throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
 
     return returnUserData(user);
@@ -143,7 +149,12 @@ const changePassword = async (
 
   //checking if the password is correct
 
-  if (!(await User.isPasswordMatched(payload.oldPassword, user?.password as string)))
+  if (
+    !(await User.isPasswordMatched(
+      payload.oldPassword,
+      user?.password as string
+    ))
+  )
     throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
 
   //hash new password
@@ -217,15 +228,17 @@ const refreshToken = async (token: string) => {
   };
 };
 
-
-const forgotPassword = async (email: string) => { 
-
+const forgotPassword = async (email: string) => {
   const user = await User.isUserExistsByEmail(email);
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
   }
+const userStatus = user?.status;
 
+if (userStatus === 'BLOCKED') {
+  throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
+}
   const jwtPayload = {
     _id: user._id,
     name: user.name,
@@ -239,16 +252,75 @@ const forgotPassword = async (email: string) => {
   const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
-   "10m"
+    '10m'
   );
-
-
 
   const resetLink = `${config.client_url}/reset-password?id=${user._id}&token=${accessToken}`;
 
+  const emailResponse = await EmailHelper.sendEmail(
+    user.email,
+    EmailHelper.generatePasswordResetEmail(user.name, resetLink),
+    'Reset Password (TechTonic)'
+  );
+
+  if (emailResponse.accepted.length > 0) {
+    return 'Email sent successfully!';
+  } else {
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Email not sent!');
+  }
+};
 
 
-}
+const resetPassword = async (
+  userData: JwtPayload,
+  payload: { oldPassword: string; newPassword: string }
+) => {
+  // checking if the user is exist
+  const user = await User.isUserExistsByEmail(userData.email);
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
+  }
+
+  // checking if the user is blocked
+
+  const userStatus = user?.status;
+
+  if (userStatus === 'BLOCKED') {
+    throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
+  }
+
+  //checking if the password is correct
+
+  if (
+    !(await User.isPasswordMatched(
+      payload.oldPassword,
+      user?.password as string
+    ))
+  )
+    throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
+
+  //hash new password
+  const newHashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  await User.findOneAndUpdate(
+    {
+      email: userData.email,
+      role: userData.role,
+    },
+    {
+      password: newHashedPassword,
+      passwordChangedAt: new Date(),
+    }
+  );
+
+  return null;
+};
+
+
 
 export const AuthServices = {
   registerUser,
