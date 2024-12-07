@@ -48,6 +48,16 @@ const userSchema = new Schema<TUser, IUserModel>(
       type: Boolean,
       default: false,
     },
+    followers: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
+    },
+    following: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
+    },
     expireAt: {
       type: Date,
       default: null,

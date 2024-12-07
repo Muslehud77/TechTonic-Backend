@@ -110,7 +110,7 @@ const loginUser = async (payload: TLoginUser) => {
     throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
   }
 
-  if (user && payload?.provider && payload?.password) {
+  if (user && payload?.provider) {
     return returnUserData(user);
   }
 

@@ -63,11 +63,9 @@ const updateComment = catchAsync(async (req, res) => {
   });
 });
 
-
 export const CommentControllers = {
   createComment,
   deleteComment,
   getCommentsByPost,
   updateComment,
- 
 };
