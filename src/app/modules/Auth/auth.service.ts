@@ -273,7 +273,7 @@ if (userStatus === 'BLOCKED') {
 
 const resetPassword = async (
   userData: JwtPayload,
-  payload: { oldPassword: string; newPassword: string }
+  payload: { newPassword: string }
 ) => {
   // checking if the user is exist
   const user = await User.isUserExistsByEmail(userData.email);
@@ -290,15 +290,7 @@ const resetPassword = async (
     throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
   }
 
-  //checking if the password is correct
-
-  if (
-    !(await User.isPasswordMatched(
-      payload.oldPassword,
-      user?.password as string
-    ))
-  )
-    throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
+  
 
   //hash new password
   const newHashedPassword = await bcrypt.hash(
@@ -328,4 +320,5 @@ export const AuthServices = {
   changePassword,
   refreshToken,
   forgotPassword,
+  resetPassword,
 };

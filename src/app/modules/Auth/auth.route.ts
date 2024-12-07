@@ -30,14 +30,14 @@ router.post(
 router.post(
   '/forgot-password',
   validateRequest(AuthValidation.forgetPasswordValidationSchema),
-  AuthControllers.forgetPassword
+  AuthControllers.forgotPassword
 );
 
 router.post(
   '/reset-password',
   auth(USER_ROLE.USER, USER_ROLE.ADMIN),
   validateRequest(AuthValidation.resetPasswordValidationSchema),
-  AuthControllers.forgetPassword
+  AuthControllers.resetPassword
 );
 
 router.post(
