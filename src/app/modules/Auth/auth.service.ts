@@ -9,8 +9,13 @@ import { User } from '../User/user.model';
 import { TLoginUser, TRegisterUser } from './auth.interface';
 import { TUser } from '../User/user.interface';
 import { EmailHelper } from '../../utils/emailSender';
+import { jwtPayloadMaker } from '../../utils/jwtPayloadMaker';
 
-const registerUser = async (payload: TRegisterUser) => {
+
+
+const registerUser = async (
+  payload: TRegisterUser & { profilePhoto: string }
+) => {
   // checking if the user is exist
   const user = await User.isUserExistsByEmail(payload?.email);
 
@@ -19,24 +24,14 @@ const registerUser = async (payload: TRegisterUser) => {
   }
 
   payload.role = USER_ROLE.USER;
-
+  payload.profilePhoto =
+    'https://media.istockphoto.com/id/610003972/zh/%E5%90%91%E9%87%8F/vector-businessman-black-silhouette-isolated.jpg?s=1024x1024&w=is&k=20&c=fHByVo4W93dYjuMnLjdkbQ8suH7V_Y3TKB45aU4FShw=';
   //create new user
   const newUser = await User.create(payload);
 
   //create token and sent to the  client
 
-  const jwtPayload = {
-    _id: newUser._id,
-    name: newUser.name,
-    email: newUser.email,
-    mobileNumber: newUser.mobileNumber,
-    role: newUser.role,
-    status: newUser.status,
-    profilePhoto: newUser?.profilePhoto,
-    isPremium: newUser?.isPremium,
-    expireAt: newUser?.expireAt,
-  };
-
+  const jwtPayload = jwtPayloadMaker(newUser);
   const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
@@ -57,18 +52,7 @@ const registerUser = async (payload: TRegisterUser) => {
 
 const loginUser = async (payload: TLoginUser) => {
   const returnUserData = (user: TUser) => {
-    const jwtPayload = {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      mobileNumber: user.mobileNumber,
-      role: user.role,
-      status: user.status,
-      profilePhoto: user?.profilePhoto,
-      isPremium: user?.isPremium,
-      expireAt: user?.expireAt,
-    };
-
+    const jwtPayload = jwtPayloadMaker(user);
     const accessToken = createToken(
       jwtPayload,
       config.jwt_access_secret as string,
@@ -122,7 +106,7 @@ const loginUser = async (payload: TLoginUser) => {
         user?.password as string
       ))
     )
-      throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
+      throw new AppError(httpStatus.FORBIDDEN, 'Password do not match!');
 
     return returnUserData(user);
   }
@@ -155,7 +139,7 @@ const changePassword = async (
       user?.password as string
     ))
   )
-    throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
+    throw new AppError(httpStatus.FORBIDDEN, 'Password do not match!');
 
   //hash new password
   const newHashedPassword = await bcrypt.hash(
@@ -207,15 +191,7 @@ const refreshToken = async (token: string) => {
     throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized !');
   }
 
-  const jwtPayload = {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    mobileNumber: user.mobileNumber,
-    profilePhoto: user.profilePhoto,
-    role: user.role,
-    status: user.status,
-  };
+  const jwtPayload = jwtPayloadMaker(user);
 
   const accessToken = createToken(
     jwtPayload,
@@ -234,20 +210,12 @@ const forgotPassword = async (email: string) => {
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
   }
-const userStatus = user?.status;
+  const userStatus = user?.status;
 
-if (userStatus === 'BLOCKED') {
-  throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
-}
-  const jwtPayload = {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    mobileNumber: user.mobileNumber,
-    profilePhoto: user.profilePhoto,
-    role: user.role,
-    status: user.status,
-  };
+  if (userStatus === 'BLOCKED') {
+    throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
+  }
+  const jwtPayload = jwtPayloadMaker(user);
 
   const accessToken = createToken(
     jwtPayload,
@@ -270,7 +238,6 @@ if (userStatus === 'BLOCKED') {
   }
 };
 
-
 const resetPassword = async (
   userData: JwtPayload,
   payload: { newPassword: string }
@@ -289,8 +256,6 @@ const resetPassword = async (
   if (userStatus === 'BLOCKED') {
     throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
   }
-
-  
 
   //hash new password
   const newHashedPassword = await bcrypt.hash(
@@ -311,8 +276,6 @@ const resetPassword = async (
 
   return null;
 };
-
-
 
 export const AuthServices = {
   registerUser,
